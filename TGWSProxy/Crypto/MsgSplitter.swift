@@ -41,7 +41,7 @@ final class MsgSplitter {
                 break
             }
             if packetLen <= 0 {
-                parts.append(Data(cipherBuf[cipherBuf.startIndex + offset...]))
+                parts.append(Data(cipherBuf[cipherBuf.startIndex + offset..<cipherBuf.endIndex]))
                 offset = bufLen
                 disabled = true
                 break

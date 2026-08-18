@@ -46,7 +46,7 @@ final class ProxyEngine {
             newListener.newConnectionHandler = { [weak self] connection in
                 self?.handleNewConnection(connection, secret: secret)
             }
-            newListener.stateUpdateHandler = { [weak self] state in
+            newListener.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
                     completion(.success(()))

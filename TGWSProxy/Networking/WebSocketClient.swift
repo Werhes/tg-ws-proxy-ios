@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import Security
 import CryptoKit
 
 /// A raw WebSocket client that lets us connect to a specific IP while
@@ -128,7 +129,7 @@ final class WebSocketClient {
         guard let conn = connection else {
             onOpen(.failure(.closed)); return
         }
-        var deadline = Date().addingTimeInterval(timeout)
+        let deadline = Date().addingTimeInterval(timeout)
         conn.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             guard let self else { return }
             if let data {

@@ -59,7 +59,7 @@ enum FakeTLS {
             with: Data(repeating: 0, count: clientRandomLen)
         )
 
-        let expected256 = Data(HMAC<SHA256>(key: secret).authenticate(zeroed))
+        let expected256 = Data(HMAC<SHA256>(key: SymmetricKey(data: secret)).authenticate(zeroed))
 
         // Compare first 28 bytes with the first 28 bytes of client random.
         let cr = Array(clientRandom.prefix(28))
@@ -113,7 +113,7 @@ enum FakeTLS {
 
         // server_random = HMAC(secret, client_random + response)
         let hmacInput = clientRandom + Data(response)
-        let serverRandom = Data(HMAC<SHA256>(key: secret).authenticate(hmacInput))
+        let serverRandom = Data(HMAC<SHA256>(key: SymmetricKey(data: secret)).authenticate(hmacInput))
         response.replaceSubrange(
             shRandomOff..<(shRandomOff + 32),
             with: Array(serverRandom.prefix(32))

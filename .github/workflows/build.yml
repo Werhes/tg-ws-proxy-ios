@@ -135,51 +135,6 @@ jobs:
           name: TGWSProxy-ios
           path: "TGWSProxy-*.ipa"
 
-      # ---- Signed build (if distribution certs provided via secrets) ----
-      - name: Import signing certificate
-        if: env.HAS_CERT == 'true'
-        env:
-          HAS_CERT: ${{ secrets.APPLE_CERT_P12 != '' }}
-          CERT_P12: ${{ secrets.APPLE_CERT_P12 }}
-          CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
-        run: |
-          echo "$CERT_P12" | base64 --decode > /tmp/cert.p12
-          security create-keychain -p temp build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p temp build.keychain
-          security import /tmp/cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k temp build.keychain
-
-      - name: Archive (signed)
-        if: env.HAS_CERT == 'true'
-        env:
-          HAS_CERT: ${{ secrets.APPLE_CERT_P12 != '' }}
-          PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$PROVISIONING_PROFILE" | base64 --decode > \
-            ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
-          xcodebuild \
-            -project "$PROJECT" \
-            -scheme "$SCHEME" \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/Signed.xcarchive \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            archive
-          mkdir -p Payload
-          cp -R build/Signed.xcarchive/Products/Applications/TGWSProxy.app Payload/
-          codesign --force --deep --sign - Payload/TGWSProxy.app
-          zip -r "TGWSProxy-signed-${{ steps.version.outputs.TAG }}.ipa" Payload
-
-      - name: Upload signed IPA artifact
-        if: env.HAS_CERT == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: TGWSProxy-ios-signed
-          path: "TGWSProxy-signed-*.ipa"
-
       # ---- Create GitHub Release ----
       - name: Create Release
         uses: softprops/action-gh-release@v2

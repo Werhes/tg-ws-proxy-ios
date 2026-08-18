@@ -57,7 +57,8 @@ TGWSProxy/
 │   ├── AppState.swift        # Общее состояние приложения
 │   ├── ProxySettings.swift   # Настройки прокси (host, port, secret)
 │   ├── LogEntry.swift        # Модель лога + LogStore
-│   └── ProxyManager.swift    # Координатор запуска/остановки
+│   ├── ProxyManager.swift    # Координатор запуска/остановки
+│   └── BackgroundKeepAlive.swift # Фоновый keep-alive (audio)
 ├── Networking/
 │   ├── ProxyEngine.swift     # TCP-слушатель и управление соединениями
 │   ├── ClientConnection.swift# Мост клиент ↔ Telegram
@@ -110,18 +111,8 @@ open TGWSProxy.xcodeproj
   2. Создаётся `.ipa` (без подписи, для AltStore/Sideloadly/jailbreak).
   3. Создаётся **GitHub Release** с прикреплённым `.ipa`.
 
-### Подписанный релиз (App Store / TestFlight)
-
-Для подписанной сборки задайте **секреты** в настройках репозитория (`Settings → Secrets and variables → Actions`):
-
-| Secret | Назначение |
-|--------|-----------|
-| `APPLE_CERT_P12` | Дистрибутивный сертификат (base64) |
-| `APPLE_CERT_PASSWORD` | Пароль сертификата |
-| `APPLE_PROVISIONING_PROFILE` | Provisioning profile (base64) |
-| `APPLE_TEAM_ID` | Team ID из Apple Developer |
-
-Если эти секреты заданы, воркфлоу дополнительно соберёт подписанный `.ipa` и прикрепит его к релизу.
+### Подпись
+Приложение собирается **без подписи** (unsigned `.ipa`) и предназначено для установки через AltStore, Sideloadly или на jailbreak-устройства.
 
 ### Bundle ID
 Идентификатор пакета приложения — **`com.werhes.tgws`** (задан в `TGWSProxy.xcodeproj/project.pbxproj`).

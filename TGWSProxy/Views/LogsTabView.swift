@@ -1,4 +1,4 @@
-чimport SwiftUI
+import SwiftUI
 
 /// The logs tab: real-time streaming log view with level filtering,
 /// auto-scroll, and a clear button.

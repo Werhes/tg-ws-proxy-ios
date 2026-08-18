@@ -5,10 +5,367 @@
 	};
 	objectVersion = 56;
 	objects = {
-		3B1A1A1A1A1A1A1A1A1A1A1A /* PBXBuildFile */ = {
-			isa = PBXBuildFile;
-			fileRef = 3B1A1A1A1A1A1A1A1A1A1A1B;
+
+/* Begin PBXBuildFile section */
+		100000000000000000000001 /* TGWSProxyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000001 /* TGWSProxyApp.swift */; };
+		100000000000000000000002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000002 /* AppState.swift */; };
+		100000000000000000000003 /* ProxySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000003 /* ProxySettings.swift */; };
+		100000000000000000000004 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000004 /* LogEntry.swift */; };
+		100000000000000000000005 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000005 /* ProxyManager.swift */; };
+		100000000000000000000006 /* AESCipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* AESCipher.swift */; };
+		100000000000000000000007 /* MTProtoConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* MTProtoConstants.swift */; };
+		100000000000000000000008 /* CryptoContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000008 /* CryptoContext.swift */; };
+		100000000000000000000009 /* Handshake.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000009 /* Handshake.swift */; };
+		10000000000000000000000A /* MsgSplitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* MsgSplitter.swift */; };
+		10000000000000000000000B /* FakeTLS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* FakeTLS.swift */; };
+		10000000000000000000000C /* WebSocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* WebSocketClient.swift */; };
+		10000000000000000000000D /* ProxyEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000D /* ProxyEngine.swift */; };
+		10000000000000000000000E /* ClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000E /* ClientConnection.swift */; };
+		10000000000000000000000F /* GlassBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000F /* GlassBackground.swift */; };
+		100000000000000000000010 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000010 /* ContentView.swift */; };
+		100000000000000000000011 /* ProxyTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000011 /* ProxyTabView.swift */; };
+		100000000000000000000012 /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000012 /* SettingsTabView.swift */; };
+		100000000000000000000013 /* LogsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000013 /* LogsTabView.swift */; };
+		100000000000000000000014 /* BackgroundKeepAlive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000016 /* BackgroundKeepAlive.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		200000000000000000000001 /* TGWSProxyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TGWSProxyApp.swift; sourceTree = "<group>"; };
+		200000000000000000000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		200000000000000000000003 /* ProxySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxySettings.swift; sourceTree = "<group>"; };
+		200000000000000000000004 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		200000000000000000000005 /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
+		200000000000000000000006 /* AESCipher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESCipher.swift; sourceTree = "<group>"; };
+		200000000000000000000007 /* MTProtoConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTProtoConstants.swift; sourceTree = "<group>"; };
+		200000000000000000000008 /* CryptoContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoContext.swift; sourceTree = "<group>"; };
+		200000000000000000000009 /* Handshake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handshake.swift; sourceTree = "<group>"; };
+		20000000000000000000000A /* MsgSplitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MsgSplitter.swift; sourceTree = "<group>"; };
+		20000000000000000000000B /* FakeTLS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeTLS.swift; sourceTree = "<group>"; };
+		20000000000000000000000C /* WebSocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSocketClient.swift; sourceTree = "<group>"; };
+		20000000000000000000000D /* ProxyEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyEngine.swift; sourceTree = "<group>"; };
+		20000000000000000000000E /* ClientConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientConnection.swift; sourceTree = "<group>"; };
+		20000000000000000000000F /* GlassBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassBackground.swift; sourceTree = "<group>"; };
+		200000000000000000000010 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		200000000000000000000011 /* ProxyTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyTabView.swift; sourceTree = "<group>"; };
+		200000000000000000000012 /* SettingsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		200000000000000000000013 /* LogsTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsTabView.swift; sourceTree = "<group>"; };
+		200000000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		200000000000000000000016 /* BackgroundKeepAlive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundKeepAlive.swift; sourceTree = "<group>"; };
+		200000000000000000000015 /* TGWSProxy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TGWSProxy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		300000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		400000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				400000000000000000000002 /* TGWSProxy */,
+				400000000000000000000006 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		400000000000000000000002 /* TGWSProxy */ = {
+			isa = PBXGroup;
+			children = (
+				400000000000000000000003 /* Models */,
+				400000000000000000000004 /* Networking */,
+				400000000000000000000005 /* Crypto */,
+				400000000000000000000007 /* Views */,
+				200000000000000000000001 /* TGWSProxyApp.swift */,
+				200000000000000000000014 /* Info.plist */,
+			);
+			path = TGWSProxy;
+			sourceTree = "<group>";
+		};
+		400000000000000000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000002 /* AppState.swift */,
+				200000000000000000000003 /* ProxySettings.swift */,
+				200000000000000000000004 /* LogEntry.swift */,
+				200000000000000000000005 /* ProxyManager.swift */,
+				200000000000000000000016 /* BackgroundKeepAlive.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		400000000000000000000004 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				20000000000000000000000C /* WebSocketClient.swift */,
+				20000000000000000000000D /* ProxyEngine.swift */,
+				20000000000000000000000E /* ClientConnection.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		400000000000000000000005 /* Crypto */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000006 /* AESCipher.swift */,
+				200000000000000000000007 /* MTProtoConstants.swift */,
+				200000000000000000000008 /* CryptoContext.swift */,
+				200000000000000000000009 /* Handshake.swift */,
+				20000000000000000000000A /* MsgSplitter.swift */,
+				20000000000000000000000B /* FakeTLS.swift */,
+			);
+			path = Crypto;
+			sourceTree = "<group>";
+		};
+		400000000000000000000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				20000000000000000000000F /* GlassBackground.swift */,
+				200000000000000000000010 /* ContentView.swift */,
+				200000000000000000000011 /* ProxyTabView.swift */,
+				200000000000000000000012 /* SettingsTabView.swift */,
+				200000000000000000000013 /* LogsTabView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		400000000000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				200000000000000000000015 /* TGWSProxy.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		500000000000000000000001 /* TGWSProxy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 600000000000000000000002 /* Build configuration list for PBXNativeTarget "TGWSProxy" */;
+			buildPhases = (
+				300000000000000000000001 /* Sources */,
+				300000000000000000000002 /* Frameworks */,
+				300000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TGWSProxy;
+			productName = TGWSProxy;
+			productReference = 200000000000000000000015 /* TGWSProxy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		700000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					500000000000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 600000000000000000000001 /* Build configuration list for PBXProject "TGWSProxy" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ru;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ru,
+				en,
+				Base,
+			);
+			mainGroup = 400000000000000000000001;
+			productRefGroup = 400000000000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				500000000000000000000001 /* TGWSProxy */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		300000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		300000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100000000000000000000001 /* TGWSProxyApp.swift in Sources */,
+				100000000000000000000002 /* AppState.swift in Sources */,
+				100000000000000000000003 /* ProxySettings.swift in Sources */,
+				100000000000000000000004 /* LogEntry.swift in Sources */,
+				100000000000000000000005 /* ProxyManager.swift in Sources */,
+				100000000000000000000006 /* AESCipher.swift in Sources */,
+				100000000000000000000007 /* MTProtoConstants.swift in Sources */,
+				100000000000000000000008 /* CryptoContext.swift in Sources */,
+				100000000000000000000009 /* Handshake.swift in Sources */,
+				10000000000000000000000A /* MsgSplitter.swift in Sources */,
+				10000000000000000000000B /* FakeTLS.swift in Sources */,
+				10000000000000000000000C /* WebSocketClient.swift in Sources */,
+				10000000000000000000000D /* ProxyEngine.swift in Sources */,
+				10000000000000000000000E /* ClientConnection.swift in Sources */,
+				10000000000000000000000F /* GlassBackground.swift in Sources */,
+				100000000000000000000010 /* ContentView.swift in Sources */,
+				100000000000000000000011 /* ProxyTabView.swift in Sources */,
+				100000000000000000000012 /* SettingsTabView.swift in Sources */,
+				100000000000000000000013 /* LogsTabView.swift in Sources */,
+				100000000000000000000014 /* BackgroundKeepAlive.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		800000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		800000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		800000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TGWSProxy/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.werhes.tgws;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		800000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TGWSProxy/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.werhes.tgws;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		600000000000000000000001 /* Build configuration list for PBXProject "TGWSProxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				800000000000000000000001 /* Debug */,
+				800000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		600000000000000000000002 /* Build configuration list for PBXNativeTarget "TGWSProxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				800000000000000000000003 /* Debug */,
+				800000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
 	};
-	rootObject = 3B1A1A1A1A1A1A1A1A1A1A00 /* Project object */;
+	rootObject = 700000000000000000000001 /* Project object */;
 }

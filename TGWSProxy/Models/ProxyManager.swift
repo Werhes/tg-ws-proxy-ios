@@ -1,130 +1,141 @@
 import Foundation
 import Combine
 
-class ProxyManager: ObservableObject {
-    @Published var isRunning = false
-    @Published var host = "127.0.0.1"
-    @Published var port = 8080
-    @Published var secret = ""
-    @Published var logs: [LogEntry] = []
-    
-    private var proxyProcess: Process?
-    private let logQueue = DispatchQueue(label: "com.tgwsproxy.logs")
-    
-    var proxyLink: String {
-        let scheme = secret.isEmpty ? "tg-proxy" : "tg-socks"
-        return "\(scheme)://\(host):\(port)" + (secret.isEmpty ? "" : "?secret=\(secret)")
+/// The `ProxyManager` is the observable coordinator that owns the Swift proxy engine,
+/// exposes state to SwiftUI, and forwards engine events into the shared log store.
+@MainActor
+final class ProxyManager: ObservableObject {
+    enum Status: Equatable {
+        case stopped
+        case starting
+        case running
+        case stopping
+        case error(String)
     }
-    
-    init() {
-        loadSettings()
-        addMockLogs()
+
+    // MARK: - Published state (UI-facing)
+    @Published var status: Status = .stopped
+    @Published var settings: ProxySettings
+    @Published var activeConnections: Int = 0
+    @Published var bytesUp: Int64 = 0
+    @Published var bytesDown: Int64 = 0
+    @Published var wsConnections: Int64 = 0
+    @Published var isListening: Bool = false
+
+    /// The actual engine running the proxy protocol. Non-nil only while running.
+    private var engine: ProxyEngine?
+
+    private var startedSettings: ProxySettings?
+
+    init(settings: ProxySettings = .load()) {
+        self.settings = settings
     }
-    
-    func toggleProxy() {
-        if isRunning {
-            stopProxy()
-        } else {
-            startProxy()
+
+    // MARK: - Bootstrap
+
+    func bootstrap() {
+        Log.info("TG WS Proxy инициализирован")
+    }
+
+    // MARK: - Lifecycle
+
+    func start() {
+        guard engine == nil else { return }
+        // Persist current settings before starting.
+        settings.save()
+
+        status = .starting
+        isListening = false
+        activeConnections = 0
+        bytesUp = 0
+        bytesDown = 0
+        wsConnections = 0
+
+        let startSettings = settings
+        startedSettings = startSettings
+
+        Log.info("Запуск прокси на \(startSettings.host):\(startSettings.port)")
+
+        let newEngine = ProxyEngine(settings: startSettings)
+        newEngine.eventHandler = { [weak self] event in
+            Task { @MainActor in self?.handle(event) }
         }
-    }
-    
-    func startProxy() {
-        DispatchQueue.main.async {
-            self.isRunning = true
-            self.addLog("Прокси запущен", level: "Info")
-            self.addLog("Слушаю на \(self.host):\(self.port)", level: "Info")
-        }
-        
-        // Симуляция работы прокси
-        DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
-            self.addLog("Соединение установлено", level: "Info")
-            self.addLog("Готов к подключениям", level: "Info")
-        }
-    }
-    
-    func stopProxy() {
-        DispatchQueue.main.async {
-            self.isRunning = false
-            self.addLog("Прокси остановлен", level: "Info")
-        }
-    }
-    
-    func updateSettings(host: String, port: Int, secret: String) {
-        DispatchQueue.main.async {
-            self.host = host
-            self.port = port
-            self.secret = secret
-            self.saveSettings()
-            self.addLog("Настройки обновлены", level: "Info")
-        }
-    }
-    
-    func addLog(_ message: String, level: String = "Info") {
-        logQueue.async { [weak self] in
-            let timestamp = Self.formatTime(Date())
-            let entry = LogEntry(
-                level: level,
-                message: message,
-                timestamp: timestamp
-            )
-            
-            DispatchQueue.main.async {
-                self?.logs.append(entry)
-                // Сохранять максимум 1000 логов
-                if self?.logs.count ?? 0 > 1000 {
-                    self?.logs.removeFirst()
+        engine = newEngine
+
+        newEngine.start { [weak self] result in
+            Task { @MainActor in
+                guard let self else { return }
+                switch result {
+                case .success:
+                    self.status = .running
+                    self.isListening = true
+                    self.logStartup(startSettings)
+                    // Keep the app alive in the background while the proxy runs.
+                    BackgroundKeepAlive.shared.start()
+                case .failure(let error):
+                    self.status = .error(error.localizedDescription)
+                    Log.error("Ошибка запуска: \(error.localizedDescription)")
+                    self.engine = nil
                 }
             }
         }
     }
-    
-    func clearLogs() {
-        DispatchQueue.main.async {
-            self.logs.removeAll()
-            self.addLog("Логи очищены", level: "Info")
-        }
-    }
-    
-    private func saveSettings() {
-        let settings: [String: Any] = [
-            "host": host,
-            "port": port,
-            "secret": secret
-        ]
-        UserDefaults.standard.setValue(settings, forKey: "ProxySettings")
-    }
-    
-    private func loadSettings() {
-        if let settings = UserDefaults.standard.dictionary(forKey: "ProxySettings") {
-            if let host = settings["host"] as? String {
-                self.host = host
-            }
-            if let port = settings["port"] as? Int {
-                self.port = port
-            }
-            if let secret = settings["secret"] as? String {
-                self.secret = secret
-            }
-        }
-    }
-    
-    private func addMockLogs() {
-        addLog("Приложение запущено", level: "Info")
-        addLog("Конфигурация загружена", level: "Info")
-        addLog("Ожидание команды запуска...", level: "Info")
-    }
-    
-    private static func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
-        return formatter.string(from: date)
-    }
-}
 
-struct LogEntry: Identifiable {
-    let id = UUID()
-    let level: String
-    let message: String
-    let timestamp: String
+    func stop() {
+        guard let engine else { return }
+        status = .stopping
+        Log.info("Остановка прокси")
+        engine.stop { [weak self] in
+            Task { @MainActor in
+                self?.engine = nil
+                self?.status = .stopped
+                self?.isListening = false
+                self?.activeConnections = 0
+                BackgroundKeepAlive.shared.stop()
+                Log.info("Прокси остановлен")
+            }
+        }
+    }
+
+    func toggle() {
+        switch status {
+        case .running, .starting, .stopping:
+            stop()
+        default:
+            start()
+        }
+    }
+
+    // MARK: - Event handling
+
+    private func handle(_ event: ProxyEngine.Event) {
+        switch event {
+        case .clientConnected(let count):
+            activeConnections = count
+        case .traffic(let up, let down, let wsCount):
+            bytesUp = up
+            bytesDown = down
+            wsConnections = wsCount
+        }
+    }
+
+    private func logStartup(_ s: ProxySettings) {
+        Log.info("Прокси слушает на \(s.host):\(s.port)")
+        Log.info("Secret: \(s.secret)")
+        if !s.fakeTLSDomain.isEmpty {
+            Log.info("Fake TLS: \(s.fakeTLSDomain)")
+        }
+        Log.info("Подключение (dd): \(s.ddLink)")
+        if let link = s.eeLink {
+            Log.info("Подключение (ee): \(link)")
+        }
+    }
+
+    /// The shareable link based on the active configuration.
+    var connectionLink: String {
+        if let link = settings.eeLink {
+            return link
+        }
+        return settings.ddLink
+    }
 }

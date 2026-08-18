@@ -1,208 +1,159 @@
 import SwiftUI
+import UIKit
 
+/// The settings tab: host, port, secret, fake-TLS domain, and toggle options.
 struct SettingsTabView: View {
-    @EnvironmentObject var proxyManager: ProxyManager
-    @State private var editHost = ""
-    @State private var editPort = ""
-    @State private var editSecret = ""
-    @State private var showSaveAlert = false
-    @State private var alertMessage = ""
-    
+    @EnvironmentObject private var appState: AppState
+    @State private var host: String = ""
+    @State private var port: String = ""
+    @State private var secret: String = ""
+    @State private var fakeTLS: String = ""
+    @State private var fallbackCF: Bool = true
+    @State private var proxyProtocol: Bool = false
+    @State private var forceTestDC: Bool = false
+    @State private var saved = false
+
     var body: some View {
-        ZStack {
-            Color.clear.ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Общие настройки
-                    SectionHeader(title: "Основные параметры")
-                    
-                    GlassCard {
-                        VStack(spacing: 16) {
-                            SettingTextField(
-                                label: "Хост",
-                                text: $editHost,
-                                placeholder: "127.0.0.1"
-                            )
-                            
-                            Divider().background(Color.white.opacity(0.1))
-                            
-                            SettingTextField(
-                                label: "Порт",
-                                text: $editPort,
-                                placeholder: "8080",
-                                keyboardType: .numberPad
-                            )
-                            
-                            Divider().background(Color.white.opacity(0.1))
-                            
-                            SettingTextField(
-                                label: "Secret Key",
-                                text: $editSecret,
-                                placeholder: "Оставить пустым",
-                                isSecure: true
-                            )
-                        }
-                    }
-                    
-                    // Дополнительные настройки
-                    SectionHeader(title: "Дополнительно")
-                    
-                    GlassCard {
-                        VStack(spacing: 12) {
-                            Toggle(isOn: .constant(true)) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.cyan)
-                                    
-                                    Text("Автозапуск при открытии")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .tint(.cyan)
-                            
-                            Divider().background(Color.white.opacity(0.1))
-                            
-                            Toggle(isOn: .constant(false)) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "bell.fill")
-                                        .font(.system(size: 16))
-                                        .foregroundColor(.cyan)
-                                    
-                                    Text("Уведомления об ошибках")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .tint(.cyan)
-                        }
-                    }
-                    
-                    // О приложении
-                    SectionHeader(title: "О приложении")
-                    
-                    GlassCard {
-                        VStack(spacing: 12) {
-                            InfoRow(label: "Версия", value: "1.0.0")
-                            Divider().background(Color.white.opacity(0.1))
-                            InfoRow(label: "Автор", value: "Flowseal")
-                            Divider().background(Color.white.opacity(0.1))
-                            InfoRow(label: "Лицензия", value: "MIT")
-                        }
-                    }
-                    
-                    // Кнопка сохранения
-                    Button(action: saveSettings) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 16, weight: .semibold))
-                            
-                            Text("Сохранить изменения")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .foregroundColor(.white)
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.cyan.opacity(0.8),
-                                    Color.blue.opacity(0.6)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .cornerRadius(8)
-                    }
-                    .padding(.top, 12)
-                    
-                    Spacer(minLength: 20)
-                }
-                .padding(16)
+        ScrollView {
+            VStack(spacing: 16) {
+                connectionCard
+                togglesCard
+                saveButton
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+        }
+        .scrollIndicators(.hidden)
+        .onAppear(perform: loadFromSettings)
+    }
+
+    // MARK: - Connection
+
+    private var connectionCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 14) {
+                sectionLabel("Соединение", icon: "antenna.radiowaves.left.and.right")
+
+                field("Хост", icon: "network", text: $host, keyboard: .numbersAndPunctuation)
+                field("Порт", icon: "number", text: $port, keyboard: .numberPad)
+                field("Secret (hex)", icon: "key.fill", text: $secret, keyboard: .asciiCapable)
+                field("Fake TLS домен", icon: "lock.fill", text: $fakeTLS, keyboard: .URL)
             }
         }
-        .onAppear {
-            editHost = proxyManager.host
-            editPort = String(proxyManager.port)
-            editSecret = proxyManager.secret
-        }
-        .alert("Настройки", isPresented: $showSaveAlert) {
-            Button("OK") { }
-        } message: {
-            Text(alertMessage)
+    }
+
+    // MARK: - Toggles
+
+    private var togglesCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 6) {
+                sectionLabel("Режимы", icon: "switch.2")
+
+                toggleRow("CF Proxy fallback", isOn: $fallbackCF)
+                toggleRow("Proxy Protocol", isOn: $proxyProtocol)
+                toggleRow("Force test DC", isOn: $forceTestDC)
+            }
         }
     }
-    
+
+    // MARK: - Save
+
+    private var saveButton: some View {
+        Button {
+            saveSettings()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: saved ? "checkmark.circle.fill" : "square.and.arrow.down.fill")
+                Text(saved ? "Сохранено" : "Сохранить настройки")
+                    .font(.headline)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                Capsule()
+                    .fill(
+                        saved
+                            ? AnyShapeStyle(Color.green.opacity(0.7))
+                            : AnyShapeStyle(LinearGradient(colors: [Color.cyan, Color.blue], startPoint: .leading, endPoint: .trailing))
+                    )
+                    .shadow(color: Color.blue.opacity(0.4), radius: 10, x: 0, y: 5)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(appState.proxyManager.isListening)
+    }
+
+    // MARK: - Helpers
+
+    private func field(_ title: String, icon: String, text: Binding<String>, keyboard: UIKeyboardType) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.cyan)
+                .frame(width: 22)
+            TextField(title, text: text)
+                .keyboardType(keyboard)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .foregroundColor(.white)
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(.white.opacity(0.07))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.1), lineWidth: 1))
+                )
+        }
+    }
+
+    private func toggleRow(_ title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.85))
+        }
+        .tint(.cyan)
+        .padding(.vertical, 6)
+    }
+
+    private func sectionLabel(_ text: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundColor(.cyan)
+            Text(text)
+                .font(.headline)
+                .foregroundColor(.white)
+        }
+    }
+
+    // MARK: - Load / Save
+
+    private func loadFromSettings() {
+        let s = appState.proxyManager.settings
+        host = s.host
+        port = "\(s.port)"
+        secret = s.secret
+        fakeTLS = s.fakeTLSDomain
+        fallbackCF = s.fallbackCFProxy
+        proxyProtocol = s.proxyProtocol
+        forceTestDC = s.forceTestDC
+    }
+
     private func saveSettings() {
-        guard !editHost.isEmpty else {
-            alertMessage = "Укажите хост"
-            showSaveAlert = true
-            return
-        }
-        
-        guard let port = Int(editPort), port > 0, port < 65536 else {
-            alertMessage = "Укажите правильный порт (1-65535)"
-            showSaveAlert = true
-            return
-        }
-        
-        proxyManager.updateSettings(
-            host: editHost,
-            port: port,
-            secret: editSecret
-        )
-        
-        alertMessage = "Настройки сохранены"
-        showSaveAlert = true
-    }
-}
+        var s = appState.proxyManager.settings
+        s.host = host.isEmpty ? "127.0.0.1" : host
+        s.port = UInt16(port) ?? 1443
+        s.secret = secret.isEmpty ? s.secret : secret
+        s.fakeTLSDomain = fakeTLS.trimmingCharacters(in: .whitespaces)
+        s.fallbackCFProxy = fallbackCF
+        s.proxyProtocol = proxyProtocol
+        s.forceTestDC = forceTestDC
+        appState.proxyManager.settings = s
+        s.save()
 
-struct SectionHeader: View {
-    let title: String
-    
-    var body: some View {
-        Text(title)
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(.gray)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
-            .padding(.top, 8)
-    }
-}
-
-struct SettingTextField: View {
-    let label: String
-    @Binding var text: String
-    let placeholder: String
-    var keyboardType: UIKeyboardType = .default
-    var isSecure: Bool = false
-    
-    var body: some View {
-        VStack(spacing: 6) {
-            Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.gray)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            if isSecure {
-                SecureField(placeholder, text: $text)
-                    .font(.system(size: 14, weight: .regular, design: .monospaced))
-                    .foregroundColor(.cyan)
-                    .keyboardType(keyboardType)
-            } else {
-                TextField(placeholder, text: $text)
-                    .font(.system(size: 14, weight: .regular, design: .monospaced))
-                    .foregroundColor(.cyan)
-                    .keyboardType(keyboardType)
-            }
+        withAnimation { saved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation { saved = false }
         }
+        Log.info("Настройки сохранены")
     }
-}
-
-#Preview {
-    SettingsTabView()
-        .environmentObject(ProxyManager())
 }

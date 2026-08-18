@@ -1,146 +1,142 @@
-import SwiftUI
+чimport SwiftUI
 
+/// The logs tab: real-time streaming log view with level filtering,
+/// auto-scroll, and a clear button.
 struct LogsTabView: View {
-    @EnvironmentObject var proxyManager: ProxyManager
+    @ObservedObject private var logStore = LogStore.shared
+    @State private var filter: LogEntry.Level? = nil
     @State private var autoScroll = true
-    @State private var selectedLogLevel = "All"
-    let logLevels = ["All", "Info", "Warning", "Error"]
-    
-    var filteredLogs: [LogEntry] {
-        if selectedLogLevel == "All" {
-            return proxyManager.logs
-        }
-        return proxyManager.logs.filter { $0.level == selectedLogLevel }
-    }
-    
+    @State private var textContent = ""
+    @State private var contentDirty = false
+
     var body: some View {
-        ZStack {
-            Color.clear.ignoresSafeArea()
-            
-            VStack(spacing: 12) {
-                // Фильтры и кнопки
-                HStack(spacing: 12) {
-                    Picker("Уровень", selection: $selectedLogLevel) {
-                        ForEach(logLevels, id: \.self) { level in
-                            Text(level).tag(level)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .tint(.cyan)
-                    
-                    Button(action: clearLogs) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 14))
-                            .foregroundColor(.red)
-                    }
-                    .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.05))
-                    .cornerRadius(6)
+        VStack(spacing: 12) {
+            filterBar
+            logView
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .onReceive(logStore.$entries) { _ in
+            rebuildText()
+        }
+        .onAppear {
+            rebuildText()
+        }
+    }
+
+    private var filteredLogs: [LogEntry] {
+        guard let filter else { return logStore.entries }
+        return logStore.entries.filter { $0.level == filter }
+    }
+
+    // MARK: - Filter bar
+
+    private var filterBar: some View {
+        GlassCard(padding: 12) {
+            HStack(spacing: 8) {
+                filterButton(.info, title: "Info")
+                filterButton(.warning, title: "Warn")
+                filterButton(.error, title: "Error")
+
+                Spacer()
+
+                Button {
+                    logStore.clear()
+                    rebuildText()
+                } label: {
+                    Image(systemName: "trash.fill")
+                        .font(.footnote)
+                        .foregroundColor(.red)
+                        .padding(8)
+                        .background(Circle().fill(.white.opacity(0.1)))
                 }
-                .padding(12)
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(white: 0.12, opacity: 0.5),
-                            Color(white: 0.08, opacity: 0.4)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func filterButton(_ level: LogEntry.Level, title: String) -> some View {
+        let isActive = filter == level
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                filter = isActive ? nil : level
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: level.systemImage)
+                Text(title)
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundColor(isActive ? .white : .white.opacity(0.6))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(
+                Capsule()
+                    .fill(isActive ? level.tintColor.opacity(0.7) : .white.opacity(0.08))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Log content
+
+    private var logView: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                Text(textContent)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.85))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .id("logText")
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.white.opacity(0.12), lineWidth: 1)
                     )
-                )
-                .cornerRadius(8)
-                .padding(12)
-                
-                // Лог
-                ScrollViewReader { reader in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 2) {
-                            if filteredLogs.isEmpty {
-                                HStack {
-                                    Spacer()
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "doc.text.magnifyingglass")
-                                            .font(.system(size: 32))
-                                            .foregroundColor(.gray)
-                                        
-                                        Text("Логи отсутствуют")
-                                            .font(.system(size: 14, weight: .medium))
-                                            .foregroundColor(.gray)
-                                    }
-                                    .padding(.vertical, 40)
-                                    Spacer()
-                                }
-                            } else {
-                                ForEach(filteredLogs) { log in
-                                    LogRow(log: log)
-                                        .id(log.id)
-                                }
-                            }
-                        }
-                        .padding(12)
-                    }
-                    .onChange(of: filteredLogs.count) { _ in
-                        if autoScroll, let lastLog = filteredLogs.last {
-                            reader.scrollTo(lastLog.id, anchor: .bottom)
-                        }
+            )
+            .onChange(of: textContent) { _ in
+                if autoScroll {
+                    withAnimation {
+                        proxy.scrollTo("logText", anchor: .bottom)
                     }
                 }
             }
-            .padding(12)
         }
     }
-    
-    private func clearLogs() {
-        proxyManager.clearLogs()
-    }
-}
 
-struct LogRow: View {
-    let log: LogEntry
-    
-    var levelColor: Color {
-        switch log.level {
-        case "Info":
-            return Color.cyan
-        case "Warning":
-            return Color.yellow
-        case "Error":
-            return Color.red
-        default:
-            return Color.gray
-        }
-    }
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 8) {
-                    Circle()
-                        .fill(levelColor)
-                        .frame(width: 6, height: 6)
-                    
-                    Text(log.level)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(levelColor)
-                    
-                    Text(log.timestamp)
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
-                        .foregroundColor(.gray)
-                }
-                
-                Text(log.message)
-                    .font(.system(size: 12, weight: .regular, design: .monospaced))
-                    .foregroundColor(.white.opacity(0.8))
-                    .lineLimit(nil)
+    // MARK: - Build text
+
+    private func rebuildText() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+
+        let lines = filteredLogs.map { entry in
+            let time = formatter.string(from: entry.timestamp)
+            let levelTag: String
+            switch entry.level {
+            case .error: levelTag = "ERR "
+            case .warning: levelTag = "WARN"
+            case .debug: levelTag = "DBG "
+            case .info: levelTag = "INFO"
             }
-            .padding(8)
-            .background(Color.white.opacity(0.05))
-            .cornerRadius(6)
+            return "\(time) [\(levelTag)] \(entry.message)"
         }
+        textContent = lines.joined(separator: "\n")
     }
 }
 
-#Preview {
-    LogsTabView()
-        .environmentObject(ProxyManager())
+private extension LogEntry.Level {
+    var tintColor: Color {
+        switch self {
+        case .info: return .teal
+        case .warning: return .orange
+        case .error: return .red
+        case .debug: return .gray
+        }
+    }
 }

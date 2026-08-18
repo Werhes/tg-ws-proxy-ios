@@ -1,154 +1,134 @@
 import SwiftUI
 
+/// The main window with the Liquid Glass design and a floating tab bar
+/// for Proxy, Settings, and Logs.
 struct ContentView: View {
-    @EnvironmentObject var proxyManager: ProxyManager
-    @State private var selectedTab = 0
-    
+    @EnvironmentObject private var appState: AppState
+
     var body: some View {
         ZStack {
-            // Фоновый градиент
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.1, green: 0.15, blue: 0.25),
-                    Color(red: 0.08, green: 0.12, blue: 0.22)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
+            GlassBackground()
+
             VStack(spacing: 0) {
                 // Header
-                VStack(spacing: 8) {
-                    Text("TG WS Proxy")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    Text(proxyManager.isRunning ? "● Активен" : "● Остановлен")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(proxyManager.isRunning ? .green : .gray)
+                header
+
+                // Tab content
+                ZStack {
+                    switch appState.selectedTab {
+                    case .proxy:
+                        ProxyTabView()
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    case .settings:
+                        SettingsTabView()
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    case .logs:
+                        LogsTabView()
+                            .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    }
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(white: 0.15, opacity: 0.6),
-                            Color(white: 0.1, opacity: 0.4)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                
-                // Вкладки
-                HStack(spacing: 0) {
-                    TabBarItem(
-                        icon: "wifi",
-                        title: "Proxy",
-                        isSelected: selectedTab == 0,
-                        action: { selectedTab = 0 }
-                    )
-                    
-                    TabBarItem(
-                        icon: "gear",
-                        title: "Settings",
-                        isSelected: selectedTab == 1,
-                        action: { selectedTab = 1 }
-                    )
-                    
-                    TabBarItem(
-                        icon: "doc.text",
-                        title: "Logs",
-                        isSelected: selectedTab == 2,
-                        action: { selectedTab = 2 }
-                    )
-                }
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(white: 0.12, opacity: 0.8),
-                            Color(white: 0.08, opacity: 0.6)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .padding(.bottom, 1)
-                
-                // Содержание вкладок
-                TabView(selection: $selectedTab) {
-                    ProxyTabView()
-                        .tag(0)
-                    
-                    SettingsTabView()
-                        .tag(1)
-                    
-                    LogsTabView()
-                        .tag(2)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .animation(.easeInOut(duration: 0.25), value: appState.selectedTab)
+
+                // Floating tab bar
+                GlassTabBar(selection: $appState.selectedTab)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 12)
             }
         }
     }
+
+    private var header: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("TG WS Proxy")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text(appState.selectedTab.title)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            Spacer()
+            statusBadge
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+    }
+
+    @ViewBuilder
+    private var statusBadge: some View {
+        let running = appState.proxyManager.isListening
+        HStack(spacing: 8) {
+            Circle()
+                .fill(running ? Color.green : Color.red)
+                .frame(width: 10, height: 10)
+                .shadow(color: (running ? Color.green : Color.red).opacity(0.8), radius: 6)
+            Text(running ? "Активен" : "Остановлен")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(Capsule().stroke(Color.white.opacity(0.15), lineWidth: 1))
+        )
+    }
 }
 
-struct TabBarItem: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-    
+/// The floating liquid-glass tab bar.
+struct GlassTabBar: View {
+    @Binding var selection: Tab
+
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                
-                Text(title)
-                    .font(.system(size: 10, weight: .medium))
+        HStack {
+            ForEach(Tab.allCases) { tab in
+                tabButton(tab)
             }
-            .frame(maxWidth: .infinity)
+        }
+        .padding(8)
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                .shadow(color: .black.opacity(0.4), radius: 16, x: 0, y: 8)
+        )
+    }
+
+    private func tabButton(_ tab: Tab) -> some View {
+        let isSelected = selection == tab
+        return Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                selection = tab
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: tab.systemImage)
+                    .font(.system(size: 17, weight: .semibold))
+                Text(tab.title)
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundColor(isSelected ? .white : .white.opacity(0.6))
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .foregroundColor(isSelected ? .cyan : .gray)
             .background(
-                isSelected ?
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.cyan.opacity(0.3),
-                        Color.blue.opacity(0.2)
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ) : LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.clear,
-                        Color.clear
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                isSelected ?
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.cyan.opacity(0.5),
-                                Color.blue.opacity(0.3)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    ) : nil
+                Capsule()
+                    .fill(
+                        isSelected
+                            ? AnyShapeStyle(
+                                LinearGradient(
+                                    colors: [Color.cyan.opacity(0.8), Color.blue.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            : AnyShapeStyle(.clear)
+                    )
+                    .shadow(color: isSelected ? Color.blue.opacity(0.5) : .clear, radius: 8, x: 0, y: 3)
             )
         }
+        .buttonStyle(.plain)
     }
-}
-
-#Preview {
-    ContentView()
-        .environmentObject(ProxyManager())
 }

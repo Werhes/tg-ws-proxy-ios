@@ -68,7 +68,9 @@ final class WebSocketClient {
             .compactMap { $0 as? NWProtocolTLS.Options }
             .first ?? NWProtocolTLS.Options()
         sec_protocol_options_set_min_tls_protocol_version(tlsOptions.securityProtocolOptions, .TLSv12)
-        sec_protocol_options_set_server_name(tlsOptions.securityProtocolOptions, effectiveSNI)
+        effectiveSNI.withCString { cSNI in
+            sec_protocol_options_set_tls_server_name(tlsOptions.securityProtocolOptions, cSNI)
+        }
         if parameters.defaultProtocolStack.applicationProtocols.isEmpty {
             parameters.defaultProtocolStack.applicationProtocols = [tlsOptions]
         }

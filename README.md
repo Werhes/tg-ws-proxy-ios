@@ -105,11 +105,12 @@ open TGWSProxy.xcodeproj
 
 В репозитории настроен CI-воркфлоу [`.github/workflows/build.yml`](.github/workflows/build.yml):
 
-- **Сборка Release** — при каждом push в `main`, PR и ручном запуске сразу собирается **Release-сборка для устройства** (`generic/platform=iOS`, без подписи). Тесты не запускаются.
-- **Релиз** — при создании тега `v*` (например `v1.0.0`) или ручном запуске воркфлоу с `make_release` автоматически:
+- **Сразу Release `.ipa`** — при каждом push в `main`, PR и ручном запуске собирается **Release-архив для устройства** (`generic/platform=iOS`, без подписи), из которого сразу создаётся **`.ipa`** (не `.app`).
+- **Релиз** — при каждом запуске (кроме PR) создаётся **GitHub Release** с прикреплённым `.ipa`:
   1. Собирается Release-архив для устройства.
   2. Создаётся `.ipa` (без подписи, для AltStore/Sideloadly/jailbreak).
-  3. Создаётся **GitHub Release** с прикреплённым `.ipa`.
+  3. `.ipa` загружается как artifact и прикрепляется к **GitHub Release**.
+- Версия тега для релиза: тег `v*` при push по тегу, входной `version` при ручном запуске, `v1.0.0-<sha>` при push в `main`.
 
 ### Rust-ядро
 Прокси-движок написан на **Rust** (каталог [`src-wrapper/`](src-wrapper)) и компилируется в статическую библиотеку `libtgwsproxy.a`, которая линкуется в приложение. Rust-сборка запускается через Run Script build phase [`scripts/build-rust-ios.sh`](scripts/build-rust-ios.sh).

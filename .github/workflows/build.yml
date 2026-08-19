@@ -41,13 +41,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode (if available)
+      # Use the runner's default Xcode. Its iOS Simulator runtime matches the
+      # SDK, which actool needs even for device builds (asset catalog compilation).
+      - name: Show Xcode version
         run: |
-          if [ -d /Applications/Xcode_16.1.app ]; then
-            sudo xcode-select -s /Applications/Xcode_16.1.app
-          else
-            echo "Using default Xcode"
-          fi
+          xcode-select -p
           xcodebuild -version
 
       - name: Install Rust + iOS target

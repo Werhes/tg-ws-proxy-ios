@@ -22,8 +22,8 @@ final class ProxyManager: ObservableObject {
     @Published var wsConnections: Int64 = 0
     @Published var isListening: Bool = false
 
-    /// The actual engine running the proxy protocol. Non-nil only while running.
-    private var engine: ProxyEngine?
+    /// The actual engine running the proxy protocol (Rust core). Non-nil only while running.
+    private var engine: RustProxyEngine?
 
     private var startedSettings: ProxySettings?
 
@@ -56,7 +56,7 @@ final class ProxyManager: ObservableObject {
 
         Log.info("Запуск прокси на \(startSettings.host):\(startSettings.port)")
 
-        let newEngine = ProxyEngine(settings: startSettings)
+        let newEngine = RustProxyEngine(settings: startSettings)
         newEngine.eventHandler = { [weak self] event in
             Task { @MainActor in self?.handle(event) }
         }
@@ -108,7 +108,7 @@ final class ProxyManager: ObservableObject {
 
     // MARK: - Event handling
 
-    private func handle(_ event: ProxyEngine.Event) {
+    private func handle(_ event: RustProxyEngine.Event) {
         switch event {
         case .clientConnected(let count):
             activeConnections = count

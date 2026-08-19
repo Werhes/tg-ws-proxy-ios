@@ -47,6 +47,11 @@ jobs:
           fi
           xcodebuild -version
 
+      - name: Install Rust + iOS target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+
       - name: List schemes
         run: xcodebuild -list -project "$PROJECT"
 
@@ -92,6 +97,11 @@ jobs:
             echo "Using default Xcode"
           fi
           xcodebuild -version
+
+      - name: Install Rust + iOS target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
 
       # Determine release version/tag
       - name: Determine version

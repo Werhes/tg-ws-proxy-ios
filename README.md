@@ -111,6 +111,17 @@ open TGWSProxy.xcodeproj
   2. Создаётся `.ipa` (без подписи, для AltStore/Sideloadly/jailbreak).
   3. Создаётся **GitHub Release** с прикреплённым `.ipa`.
 
+### Rust-ядро
+Прокси-движок написан на **Rust** (каталог [`src-wrapper/`](src-wrapper)) и компилируется в статическую библиотеку `libtgwsproxy.a`, которая линкуется в приложение. Rust-сборка запускается через Run Script build phase [`scripts/build-rust-ios.sh`](scripts/build-rust-ios.sh).
+
+Требования для локальной сборки:
+```sh
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+```
+В CI Rust и iOS-таргеты устанавливаются автоматически через `dtolnay/rust-toolchain`.
+
+Свифт-обёртка [`TGWSProxy/Networking/RustProxyEngine.swift`](TGWSProxy/Networking/RustProxyEngine.swift) вызывает C ABI ядра через заголовок [`TGWSProxy/RustBridge.h`](TGWSProxy/RustBridge.h) (`StartProxy`, `StopProxy`, `SetSecret`, `GetRawStats` и др.).
+
 ### Подпись
 Приложение собирается **без подписи** (unsigned `.ipa`) и предназначено для установки через AltStore, Sideloadly или на jailbreak-устройства.
 

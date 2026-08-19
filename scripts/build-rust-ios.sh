@@ -35,18 +35,19 @@ find_tool() {
   exit 1
 }
 
+# Use cargo/rustc directly from PATH (the default toolchain). This avoids
+# invoking `rustup which --toolchain stable`, which can trigger a concurrent
+# rustup toolchain sync and corrupt component downloads on CI.
+CARGO_BIN="$(find_tool cargo)"
+RUSTC_BIN="$(find_tool rustc)"
 RUSTUP_BIN="$(find_tool rustup)"
 
-# Ensure the iOS Rust targets are installed (idempotent).
-"$RUSTUP_BIN" target list --installed | grep -qx "aarch64-apple-ios" || \
-  "$RUSTUP_BIN" target add aarch64-apple-ios >/dev/null
-"$RUSTUP_BIN" target list --installed | grep -qx "aarch64-apple-ios-sim" || \
-  "$RUSTUP_BIN" target add aarch64-apple-ios-sim >/dev/null
-"$RUSTUP_BIN" target list --installed | grep -qx "x86_64-apple-ios" || \
-  "$RUSTUP_BIN" target add x86_64-apple-ios >/dev/null
-
-RUSTC_BIN="$("$RUSTUP_BIN" which --toolchain stable rustc)"
-CARGO_BIN="$("$RUSTUP_BIN" which --toolchain stable cargo)"
+ensure_rust_target() {
+  TARGET="$1"
+  if ! "$RUSTUP_BIN" target list --installed | grep -qx "$TARGET"; then
+    "$RUSTUP_BIN" target add "$TARGET" >/dev/null 2>&1 || true
+  fi
+}
 
 if [ -n "${SDKROOT:-}" ] && [ ! -d "$SDKROOT" ]; then
   echo "SDKROOT does not exist: $SDKROOT" >&2
@@ -96,11 +97,11 @@ for ARCHITECTURE in $(requested_architectures); do
     *" $RUST_TARGET "*) continue ;;
   esac
   BUILT_TARGETS="$BUILT_TARGETS $RUST_TARGET"
+  ensure_rust_target "$RUST_TARGET"
   CARGO_TARGET_DIR="$TARGET_DIR" "$CARGO_BIN" rustc \
     --manifest-path "$MANIFEST_PATH" \
     --target "$RUST_TARGET" \
     --release \
-    --locked \
     --lib \
     -- \
     --crate-type=staticlib

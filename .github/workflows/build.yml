@@ -53,8 +53,23 @@ jobs:
       - name: Resolve Swift packages
         run: xcodebuild -resolvePackageDependencies -project "$PROJECT" -scheme "$SCHEME"
 
+      # Build the Rust core first so libtgwsproxy.a exists at TGWSProxy/libs
+      # before Xcode's linker runs (works for both build and archive).
+      # Run outside Xcode, so pin the device platform/arch for the device archive.
+      - name: Build Rust core
+        env:
+          PLATFORM_NAME: iphoneos
+          ARCHS: arm64
+        run: |
+          bash scripts/build-rust-ios.sh
+          ls -lh TGWSProxy/libs/libtgwsproxy.a
+
       # Build unsigned Release archive for the device so it can be distributed as .ipa.
+      # SKIP_RUST_BUILD=1 makes the Xcode "Build Rust Core" script phase a no-op,
+      # since the Rust core is already built above.
       - name: Archive (unsigned Release)
+        env:
+          SKIP_RUST_BUILD: "1"
         run: |
           xcodebuild \
             -project "$PROJECT" \

@@ -8,7 +8,8 @@ set -eu
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 MANIFEST_PATH="$ROOT_DIR/src-wrapper/Cargo.toml"
 TARGET_DIR="${DERIVED_FILE_DIR:-$ROOT_DIR/.build}/rust-target"
-OUTPUT_DIR="${BUILT_PRODUCTS_DIR:-$ROOT_DIR/.build}/rust"
+# Fixed output location referenced by LIBRARY_SEARCH_PATHS in the Xcode project.
+OUTPUT_DIR="$ROOT_DIR/TGWSProxy/libs"
 
 export PATH="$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 

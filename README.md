@@ -112,6 +112,18 @@ open TGWSProxy.xcodeproj
   3. `.ipa` загружается как artifact и прикрепляется к **GitHub Release**.
 - Версия тега для релиза: тег `v*` при push по тегу, входной `version` при ручном запуске, `v1.0.0-<sha>` при push в `main`.
 
+### Параметры ручного запуска (workflow_dispatch)
+При запуске воркфлоу вручную можно задать:
+- `version` — тег/версия релиза (например `v1.0.0`);
+- `release_name` — название релиза (если пусто — «TG WS Proxy iOS <version>»);
+- `release_body` — описание релиза (markdown; если пусто — авто-список изменений).
+
+Эти значения передаются в GitHub Release (тег, название, описание).
+
+### Иконка и шрифт
+- Иконка приложения взята из [Flowseal/tg-ws-proxy](https://github.com/Flowseal/tg-ws-proxy) (`icon.ico`) и добавлена в ассет-каталог [`TGWSProxy/Assets.xcassets`](TGWSProxy/Assets.xcassets) (AppIcon).
+- Размер шрифта в приложении принудительно минимальный (`dynamicTypeSize = .xSmall`) — даже при максимальном системном размере шрифта интерфейс остаётся мелким (см. [`TGWSProxyApp.swift`](TGWSProxy/TGWSProxyApp.swift)).
+
 ### Rust-ядро
 Прокси-движок написан на **Rust** (каталог [`src-wrapper/`](src-wrapper)) и компилируется в статическую библиотеку `libtgwsproxy.a`, которая линкуется в приложение. Rust-сборка запускается через Run Script build phase [`scripts/build-rust-ios.sh`](scripts/build-rust-ios.sh).
 

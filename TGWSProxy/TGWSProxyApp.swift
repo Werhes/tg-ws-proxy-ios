@@ -8,6 +8,7 @@ struct TGWSProxyApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .environmentObject(BackgroundKeepAlive.shared)
                 .preferredColorScheme(.dark)
                 // Keep the app's font small regardless of the system
                 // Dynamic Type / text-size setting (max system font still small).

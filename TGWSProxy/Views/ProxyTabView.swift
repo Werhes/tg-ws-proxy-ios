@@ -5,6 +5,7 @@ import UIKit
 /// the connection link, and live traffic statistics.
 struct ProxyTabView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var keepAlive: BackgroundKeepAlive
     @State private var copied = false
 
     var body: some View {
@@ -14,6 +15,7 @@ struct ProxyTabView: View {
                 statsCard
                 linkCard
                 aboutCard
+                backgroundModeCard
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -207,6 +209,46 @@ struct ProxyTabView: View {
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.7))
                     .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    // MARK: - Background mode
+
+    /// Lets the user choose how the app keeps working while it is in the background.
+    private var backgroundModeCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 14) {
+                label("Фоновый режим", icon: "moon.zzz.fill")
+
+                Text("Выберите способ работы в фоне, пока прокси запущен.")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.6))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Picker("Фоновый режим", selection: $keepAlive.mode) {
+                    ForEach(BackgroundMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                HStack(spacing: 8) {
+                    Image(systemName: keepAlive.mode.systemImage)
+                        .foregroundColor(.cyan)
+                        .frame(width: 18)
+                    Text(keepAlive.mode.subtitle)
+                        .font(.footnote)
+                        .foregroundColor(.white.opacity(0.7))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if appState.proxyManager.isListening && keepAlive.mode == .off {
+                    Text("Внимание: при сворачивании приложения прокси может быть приостановлен системой.")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }

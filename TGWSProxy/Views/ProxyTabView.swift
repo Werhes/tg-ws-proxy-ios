@@ -226,22 +226,10 @@ struct ProxyTabView: View {
                     .foregroundColor(.white.opacity(0.6))
                     .fixedSize(horizontal: false, vertical: true)
 
-                Picker("Фоновый режим", selection: $keepAlive.mode) {
-                    ForEach(BackgroundMode.allCases) { mode in
-                        Text(mode.title).tag(mode)
-                    }
+                ForEach(BackgroundMode.allCases) { mode in
+                    modeRow(mode)
                 }
-                .pickerStyle(.segmented)
-
-                HStack(spacing: 8) {
-                    Image(systemName: keepAlive.mode.systemImage)
-                        .foregroundColor(.cyan)
-                        .frame(width: 18)
-                    Text(keepAlive.mode.subtitle)
-                        .font(.footnote)
-                        .foregroundColor(.white.opacity(0.7))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                .animation(.easeInOut(duration: 0.2), value: keepAlive.mode)
 
                 if appState.proxyManager.isListening && keepAlive.mode == .off {
                     Text("Внимание: при сворачивании приложения прокси может быть приостановлен системой.")
@@ -251,6 +239,51 @@ struct ProxyTabView: View {
                 }
             }
         }
+    }
+
+    private func modeRow(_ mode: BackgroundMode) -> some View {
+        let isSelected = keepAlive.mode == mode
+        return Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                keepAlive.mode = mode
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: mode.systemImage)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(isSelected ? .cyan : .white.opacity(0.6))
+                    .frame(width: 26)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(mode.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                    Text(mode.subtitle)
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.6))
+                        .multilineTextAlignment(.leading)
+                }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(isSelected ? .cyan : .white.opacity(0.3))
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(isSelected ? Color.cyan.opacity(0.14) : .white.opacity(0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(
+                                isSelected ? Color.cyan.opacity(0.5) : .white.opacity(0.07),
+                                lineWidth: 1
+                            )
+                    )
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers

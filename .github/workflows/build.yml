@@ -20,6 +20,11 @@ on:
         description: 'Release description (markdown)'
         required: false
         default: ''
+      create_release:
+        description: 'Создать GitHub Release с .ipa (чекбокс)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -126,9 +131,12 @@ jobs:
           name: TGWSProxy-ios
           path: "TGWSProxy-*.ipa"
 
-      # ---- Create GitHub Release with the .ipa (not on PRs) ----
+      # ---- Create GitHub Release with the .ipa (only when the checkbox is enabled
+      # for manual runs; always on tag pushes; never on PRs). ----
       - name: Create Release
-        if: github.event_name != 'pull_request'
+        if: >
+          github.event_name != 'pull_request' &&
+          (github.event_name != 'workflow_dispatch' || github.event.inputs.create_release == 'true')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.TAG }}

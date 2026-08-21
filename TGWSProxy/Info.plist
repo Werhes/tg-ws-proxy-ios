@@ -31,6 +31,10 @@
 	<string>Используется для поддержания работы прокси в фоне.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Используется для поддержания работы прокси в фоне.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Используется для поддержания работы прокси в фоне.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Используется для поддержания работы прокси в фоне.</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
